@@ -1,0 +1,110 @@
+---
+title: "Project 1- Data Cleaning"
+author: "Juliana Rosa, Lilian Maque, Ilona Sirotinin"
+date: "March 1, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Source: https://www.kaggle.com/carolzhangdc/imdb-5000-movie-dataset
+
+```{r}
+#Reading the csv file that contains the raw data and storing it into "movies_data"
+movies_data <- read.csv("movies_rawdata.csv")
+```
+
+```{r}
+#Loading the dplyr package
+library(dplyr)
+```
+
+```{r}
+#Taking a look at the data
+View(movies_data)
+str(movies_data)
+head(movies_data)
+tail(movies_data)
+```
+
+```{r}
+#Removing unwanted columns
+movies_data <- select(movies_data, -(ends_with("likes")), -(starts_with("num")), -(facenumber_in_poster), -(movie_imdb_link), -(aspect_ratio), -(plot_keywords))
+```
+
+```{r}
+#Reordering columns
+movies_data <- select(movies_data, movie_title, title_year, duration, genres, content_rating, director_name, country, language, imdb_score, color, budget, gross, actor_1_name, actor_2_name, actor_3_name)
+```
+
+```{r}
+#Renaming some columns
+movies_data <- rename(movies_data, movie=movie_title, duration_in_min=duration, year=title_year)
+```
+
+```{r}
+#Removing rows with missing values
+movies_data <- filter(movies_data, complete.cases(movies_data))
+movies_data <- filter(movies_data, movie!="", year!="", duration_in_min!="", genres!="", content_rating!="", director_name!="", country!="", language!="", imdb_score!="", color!="", budget!="", gross!="", actor_1_name!="", actor_2_name!="", actor_3_name!="")
+
+```
+
+```{r}
+#Correcting typos in the movie column
+movies_vector <- as.character(movies_data$movie)
+movies_list <- list()
+for (i in 1:3830){
+  movies_list <- append(movies_list, movies_vector[i])
+}
+library(stringr)
+for (i in 1:3830){
+  movies_list[i] <- str_sub(movies_list[i], start=1, end=(str_length(movies_list[i])-2))
+}
+movies_vector <- as.character(movies_list)
+movies_factor <- as.factor(movies_vector)
+movies_data$movie <- movies_factor
+```
+
+
+```{r}
+#Simplifying the values of color
+color_vector <- as.character(movies_data$color)
+color_list <- list()
+for (i in 1:3830){
+  color_list <- append(color_list, color_vector[i])
+}
+for (i in 1:3830){
+  if (color_list[[i]]=="Color"){
+    color_list[i] <- 1
+  }
+  else{
+    color_list[i] <- 0
+  }
+}
+color_vector <- as.character(color_list)
+color_factor <- as.factor(color_vector)
+movies_data$color <- color_factor
+```
+
+```{r}
+#Creating a profit column
+movies_data <- movies_data%>%
+  mutate(profit=gross-budget)%>%
+  select(movie, year, duration_in_min, genres, content_rating, director_name, country, language, imdb_score, color, gross, budget, profit, actor_1_name, actor_2_name, actor_3_name)
+```
+
+```{r}
+#Organizing in cronological order
+movies_data <- arrange(movies_data, year)
+```
+
+```{r}
+#Taking another look at the data
+View(movies_data)
+str(movies_data)
+head(movies_data)
+tail(movies_data)
+```
+
