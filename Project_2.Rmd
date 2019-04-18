@@ -1,0 +1,87 @@
+---
+title: "Project 2- Exploratory Data Analysis"
+author: "Juliana Rosa, Lilian Maque, Ilona Sirotinin"
+date: "April 15, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Source: https://www.kaggle.com/carolzhangdc/imdb-5000-movie-dataset
+
+In this project we will use a sample from the movies data to do some exploratory data analysis with ggplot2.
+
+```{r}
+#Loading the data
+movies_data <- read.csv("movies_data.csv")
+```
+
+
+```{r}
+#Taking a sample
+set.seed(1)
+my_sample <- movies_data[sample(1:nrow(movies_data), 382), ]
+```
+
+```{r}
+#Loading the ggplot2 package
+library(ggplot2)
+```
+
+```{r}
+#Creating a boxplot
+ggplot(my_sample, aes(country, imdb_score, fill=language))+
+  geom_boxplot(outlier.shape=8)+
+  scale_fill_discrete(breaks=c("English", "French", "German", "Spanish"))+
+  ggtitle("Distribution of IMDb Scores Across Countries")+
+  xlab("Countries")+
+  ylab("IMDb Scores")+
+  theme_light()
+```
+
+```{r}
+#Creating a histogram
+ggplot(my_sample, aes(duration_in_min))+
+  geom_histogram(color="bisque4", fill="cadetblue")+
+  xlab("Duraton (min)")+
+  ylab("Count")+
+  theme_light()+
+  ggtitle("Distribution of Movie Duration")
+```
+
+
+```{r}
+#Creating a scatterplot
+ggplot(my_sample, aes(year, profit, color=color))+
+  geom_point(alpha=0.6)+
+  ggtitle("Movie Profits Throughout the Years")+
+  xlab("Year")+
+  ylab("Profit")+
+  theme_light()
+```
+
+```{r}
+#Creating a bar chart
+ggplot(my_sample, aes(content_rating))+
+  geom_bar(color="black", fill="darkorchid4")+
+  ggtitle("Content Rating Count")+
+  xlab("Content Rating")+
+  ylab("Count")+
+  theme_light()
+```
+
+```{r}
+#Creating another scatterplot
+ggplot(my_sample, aes(budget, gross))+
+  geom_point(alpha=0.7, aes(color=year))+
+  scale_color_viridis_c()+
+  geom_smooth(se=FALSE, method=lm)+
+  scale_x_continuous(limits=c(0, 76400000))+
+  scale_y_continuous(limits=c(0, 195580700))+
+  theme_light()+
+  xlab("Budget")+
+  ylab("Gross Earnings")+
+  ggtitle("Relationship Between Budget and Gross Earnings")
+```
