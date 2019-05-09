@@ -1,0 +1,94 @@
+---
+title: "Project 3- Statistical Inference"
+author: "Juliana Rosa, Lilian Maque, Ilona Sirotinin"
+date: "April 29, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Source:https://www.kaggle.com/c/titanic
+
+###Loading and Cleaning Data
+
+```{r}
+#Loading data and packages
+titanic <- read.csv("titanic.csv")
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+#Cleaning the data
+titanic%<>%
+  mutate(Family_Members_Aboard=Siblings.Spouses.Aboard+Parents.Children.Aboard)%>%
+  rename(Class=Pclass)%>%
+  select(Name, Survived, Class, Sex, Age, Family_Members_Aboard, Fare)%>%
+  arrange(Name)
+```
+
+```{r}
+survived_vector <- as.numeric(titanic$Survived)
+survived_list <- list()
+for (i in 1:887){
+  survived_list <- append(survived_list, survived_vector[i])
+}
+for (i in 1:887){
+  if (survived_list[[i]]==0){
+    survived_list[i] <- "No"
+  }
+  else{
+    survived_list[i] <- "Yes"
+  }
+}
+survived_vector <- as.character(survived_list)
+survived_factor <- as.factor(survived_vector)
+titanic$Survived <- survived_factor
+```
+
+###Taking Samples
+
+```{r}
+#Taking a sample of survivors
+survivors <- filter(titanic, Survived=="Yes")
+set.seed(8)
+survivors_sample <- survivors[sample(1:nrow(survivors), 200), ]
+```
+
+```{r}
+#Taking a sample of non survivors
+non_survivors <- filter(titanic, Survived=="No")
+set.seed(9)
+non_survivors_sample <- non_survivors[sample(1:nrow(non_survivors), 200), ]
+```
+
+###Hypothesis Testing
+
+```{r}
+#mu1= age mean for people who died, mu2= age mean for people who survived
+
+#H0: mu1-mu2=0
+#Ha: mu1-mu2>0
+```
+
+
+```{r}
+#Performing the t-test
+t_test <- t.test(x=non_survivors_sample$Age, y=survivors_sample$Age, alternative="greater")
+t_test
+
+```
+
+###Visualizing the Relationship
+
+```{r}
+#Creating a boxplot for the sample means
+my_sample <- bind_rows(non_survivors_sample, survivors_sample)
+ggplot(my_sample, aes(Survived, Age, color=Survived))+
+  geom_boxplot(outlier.shape=8)+
+  theme_light()+
+  ggtitle("Distribution of Age for Survivors and Non Survivors")+
+  scale_color_brewer(palette="Dark2", name=NULL)
+```
